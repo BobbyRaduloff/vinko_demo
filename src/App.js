@@ -1,5 +1,11 @@
-import './App.css';
-import Graph from "react-graph-vis";
+import "./App.css";
+import { Hand } from "./Hand";
+import ReactFlow, {
+  useEdgesState,
+  useNodesState,
+  useUpdateNodeInternals,
+} from "react-flow-renderer";
+import { useEffect, useState } from "react";
 
 const SS = {
   mainWrapper: {
@@ -8,32 +14,45 @@ const SS = {
     minHeight: "100vh",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   columnWrapper: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    minWidth: "100%"
+    minWidth: "100%",
+    minHeight: "100vh",
   },
   column: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
-    alignItems: "center"
-  }
-}
-
-const PeerGraph = {
-  nodes: [
-    { id: 1, label: "Player Me" },
-    { id: 2, label: "Player 1" },
-    { id: 3, label: "Player 2" },
-    { id: 4, label: "Player 3" },
-    { id: 5, label: "Player 4" }
-  ],
-  edges: []
+    alignItems: "center",
+    flex: 1,
+  },
+  column2: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 2,
+    minHeight: "100%",
+  },
+  simulation: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 2,
+    alignItems: "center",
+    minWidth: "100%",
+    marginLeft: "64px",
+    marginRight: "0px",
+  },
+  common: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+  },
 };
 
 const Table = [
@@ -41,67 +60,151 @@ const Table = [
   { suit: "spade", rank: "3" },
   { suit: "heart", rank: "7" },
   { suit: "diamond", rank: "1" },
-  { suit: "club", rank: "2" }
+  { suit: "club", rank: "2" },
 ];
 
-const Me = [
-  { suit: "club", rank: "3" },
-  { suit: "spade", rank: "4" },
+const Peers = [
+  {
+    id: "0",
+    data: {
+      cards: [
+        { suit: "club", rank: "3" },
+        { suit: "spade", rank: "4" },
+      ],
+      label: "Me",
+    },
+    position: { x: 100, y: 100 },
+    sourcePosition: "bottom",
+    targetPosition: "bottom",
+  },
+  {
+    id: "1",
+    data: {
+      cards: [{ rank: "back" }, { rank: "back" }],
+      label: "Player 1",
+    },
+    position: { x: 930, y: 100 },
+    targetPosition: "bottom",
+    sourcePosition: "bottom",
+  },
+  {
+    id: "2",
+    data: {
+      cards: [{ rank: "back" }, { rank: "back" }],
+      label: "Player 2",
+    },
+    position: { x: 100, y: 500 },
+    targetPosition: "top",
+    sourcePosition: "top",
+  },
+  {
+    id: "3",
+    data: {
+      cards: [{ rank: "back" }, { rank: "back" }],
+      label: "Player 3",
+    },
+    position: { x: 930, y: 500 },
+    targetPosition: "top",
+    sourcePosition: "top ",
+  },
 ];
 
-const GraphOpts = {
-  edges: { color: "#000000" },
-  height: "300px",
-  width: "300px"
-};
+const Edges = [
+  {
+    id: "e0-1",
+    source: "0",
+    target: "1",
+    animated: true,
+    // style: {
+    //   stroke: "red",
+    //   strokeWidth: "5px",
+    // },
+  },
+  { id: "e0-2", source: "0", target: "2", animated: true },
+  { id: "e0-3", source: "0", target: "3", animated: true },
+  { id: "e1-2", source: "1", target: "2", animated: true },
+  { id: "e1-3", source: "1", target: "3", animated: true },
+  { id: "e2-3", source: "2", target: "3", animated: true },
+];
 
 function App() {
-  for (var i = 1; i <= PeerGraph.nodes.length; i++) {
-    for (var j = 1; j <= PeerGraph.nodes.length; j++) {
-      if (i === j) continue;
-      PeerGraph.edges.push({ to: i, from: j });
-    }
-  }
+  const [nodes, setNodes, onNodesChange] = useNodesState(Peers);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(Edges);
+
+  const [MeName, setMeName] = useState("Me");
+
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === "0") {
+          node.data = {
+            ...node.data,
+            label: MeName,
+          };
+        }
+        return node;
+      })
+    );
+  }, [MeName, setNodes]);
 
   return (
     <div style={SS.mainWrapper}>
       <div style={SS.columnWrapper}>
-        <div style={SS.column}>
-          <h1>Player Visualisation</h1>
-          <h2> Table </h2>
-          <svg width="300px" height="100px" xmlns="http://www.w3.org/2000/svg">
-            {Table.map((x, i) => {
-              return (<use href={`svg-cards.svg#${x.suit}_${x.rank}`} transform="scale(0.3, 0.3)" fill="red" x={`${i * 200}px`} />);
-            })}
-          </svg>
-          <h2> Me </h2>
-          <svg width="120px" height="100px" xmlns="http://www.w3.org/2000/svg">
-            {Me.map((x, i) => {
-              return (<use href={`svg-cards.svg#${x.suit}_${x.rank}`} transform="scale(0.3, 0.3)" fill="red" x={`${i * 200}px`} />);
-            })}
-            </svg>
+        <div style={SS.column2}>
+          <div style={SS.simulation}>
+            <h3> Simulation </h3>
+            <div
+              style={{
+                width: "1200px",
+                height: "600px",
+                borderWidth: "2px",
+                borderColor: "black",
+                borderStyle: "solid",
+              }}
+            >
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                panOnDrag={false}
+                zoomOnPinch={false}
+              />
+            </div>
+          </div>
+          <div style={SS.common}>
+            <h3> Public Information </h3>
+          </div>
         </div>
         <div style={SS.column}>
-          <h1> Other Players </h1>
-          {[...Array(PeerGraph.nodes.length - 1)].map((_, i) => {
-            return (
-              <div style={SS.column}>
-                <h3> Player {i + 1}</h3>
-                <svg width="120px" height="100px" xmlns="http://www.w3.org/2000/svg">
-                  {[...Array(2)].map((_, i) => {
-                    return (<use href={`svg-cards.svg#back`} transform="scale(0.3, 0.3)" fill="red" x={`${i * 200}px`} />);
-                  })}
-                </svg>
-              </div>
-            );
-          })}
-      </div>
-      <div style={SS.column}>
-        <h1>Network Visualisation</h1>
-        <Graph graph={PeerGraph} options={GraphOpts} />
+          <h1>Result</h1>
+          <h2> Table </h2>
+          <Hand cards={Table} />
+          <h2> Me </h2>
+          <Hand cards={Peers[0].data.cards} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              alignItems: "center",
+            }}
+          >
+            {Peers.map((x) => {
+              if (x.id !== "0") {
+                return (
+                  <div style={SS.column}>
+                    <h3> Player {x.id} </h3>
+                    <Hand cards={x.data.cards} />
+                  </div>
+                );
+              }
+              return <></>;
+            })}
+          </div>
+        </div>
       </div>
     </div>
-    </div >
   );
 }
 
