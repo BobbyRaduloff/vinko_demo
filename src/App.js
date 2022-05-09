@@ -1,11 +1,9 @@
 import "./App.css";
 import { Hand } from "./Hand";
-import ReactFlow, {
-  useEdgesState,
-  useNodesState,
-  useUpdateNodeInternals,
-} from "react-flow-renderer";
+import ReactFlow, { useEdgesState, useNodesState } from "react-flow-renderer";
 import { useEffect, useState } from "react";
+import Latex from "react-latex-next";
+import "katex/dist/katex.min.css";
 
 const SS = {
   mainWrapper: {
@@ -153,6 +151,7 @@ function App() {
         <div style={SS.column2}>
           <div style={SS.simulation}>
             <h3> Simulation </h3>
+            <Latex strict>$E(g^r) = 123$</Latex>
             <div
               style={{
                 width: "1200px",
