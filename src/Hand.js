@@ -1,5 +1,5 @@
 export const Hand = ({ cards, ...props }) => {
-  const widths = { 1: 60, 2: 120, 3: 180, 4: 240, 5: 300 };
+  const widths = { 0: 120, 1: 60, 2: 120, 3: 180, 4: 240, 5: 300 };
   const width = widths[cards.length];
 
   return (
