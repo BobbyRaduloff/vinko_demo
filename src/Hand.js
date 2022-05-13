@@ -5,10 +5,14 @@ export const Hand = ({ cards, ...props }) => {
   return (
     <svg width={width} height="100px" xmlns="http://www.w3.org/2000/svg">
       {cards.map((x, i) => {
+        let suit = ["club", "diamond", "heart", "spade"][Math.floor(x / 13)];
+        let rank = (x % 13) + 1;
+        if (rank === 11) rank = "jack";
+        if (rank === 12) rank = "queen";
+        if (rank === 13) rank = "king";
+        console.log(Math.floor(x / 13), suit, rank);
         const href =
-          x.rank !== "back"
-            ? `svg-cards.svg#${x.suit}_${x.rank}`
-            : `svg-cards.svg#back`;
+          x !== -1 ? `svg-cards.svg#${suit}_${rank}` : `svg-cards.svg#back`;
         return (
           <use
             href={href}

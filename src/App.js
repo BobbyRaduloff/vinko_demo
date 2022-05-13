@@ -1,21 +1,30 @@
 import "./App.css";
 import { Hand } from "./Hand";
-import ReactFlow, { useEdgesState, useNodesState } from "react-flow-renderer";
-import { useEffect, useState } from "react";
+import ReactFlow from "react-flow-renderer";
+import { useState } from "react";
 import "katex/dist/katex.min.css";
 import {
-  Cards,
-  DirectedEdges,
   ENCRYPT_RANDOM_NUMBER,
   GenerateEdges,
   GenerateNodes,
-  InitialData,
-  INITIAL_STATE,
-  Nodes,
   PICK_RANDOM_NUMBER,
+  SHARE_COMMITMENT,
   SHARE_ENCRYPTION,
-  Table,
+  VERIFY_COMMITMENT,
+  STORE,
+  SUM_ENCRYPTION,
+  REVEAL_RANDOMNESS,
+  SUM_RANDOMNESS,
+  VERIFY_ENCRYPTION,
+  VERIFY_FINAL_ENCRYPTION,
+  VERIFY_SUM,
+  CLEAR,
+  GIVE_ENCRYPTION_TO,
+  GIVE_RAND_TO,
+  SUM_PERSONAL_RAND,
+  SUM_OTHER_RAND,
 } from "./Graph";
+import Latex from "react-latex-next";
 
 const SS = {
   mainWrapper: {
@@ -108,118 +117,368 @@ const SS = {
 };
 
 const STEPS = [
-  { f: INITIAL_STATE, props: {} },
-  { f: PICK_RANDOM_NUMBER, props: { id: "0", number: 42 } },
-  { f: PICK_RANDOM_NUMBER, props: { id: "1", number: "?" } },
-  { f: PICK_RANDOM_NUMBER, props: { id: "2", number: "?" } },
-  { f: PICK_RANDOM_NUMBER, props: { id: "3", number: "?" } },
+  // FLOP 1
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 20 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 31 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 10 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 11 } },
   {
     f: ENCRYPT_RANDOM_NUMBER,
-    props: { id: "0", number: 42, result: [0xffff, 0xbeef] },
-  },
-  {
-    f: ENCRYPT_RANDOM_NUMBER,
-    props: { id: "1", number: "?", result: ["?", "?"] },
+    props: { id: 0, result: [0xffff, 0xbeef] },
   },
   {
     f: ENCRYPT_RANDOM_NUMBER,
-    props: { id: "2", number: "?", result: ["?", "?"] },
+    props: { id: 1, result: [0xabab, 0xbaba] },
   },
   {
     f: ENCRYPT_RANDOM_NUMBER,
-    props: { id: "3", number: "?", result: ["?", "?"] },
+    props: { id: 2, result: [0x1234, 0xdeed] },
   },
   {
-    f: SHARE_ENCRYPTION,
-    props: { from: "0", encryption: [0xffff, 0xbeef] },
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
   },
   {
-    f: SHARE_ENCRYPTION,
-    props: { from: "1", encryption: ["?", "?"] },
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
   },
   {
-    f: SHARE_ENCRYPTION,
-    props: { from: "2", encryption: ["?", "?"] },
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
   },
   {
-    f: SHARE_ENCRYPTION,
-    props: { from: "3", encryption: ["?", "?"] },
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
   },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  { f: SUM_ENCRYPTION, props: { sum: 0xbfaf } },
+  { f: REVEAL_RANDOMNESS, props: { id: 0 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 1 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 2 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 3 } },
+  { f: SUM_RANDOMNESS, props: { sum: 20 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 0 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 1 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 2 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_FINAL_ENCRYPTION, props: {} },
+  { f: VERIFY_SUM, props: {} },
+  { f: CLEAR, props: {} },
+  // FLOP 2
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 0 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 15 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 12 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 51 } },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 0, result: [0xffff, 0xbeef] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 1, result: [0xabab, 0xbaba] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 2, result: [0x1234, 0xdeed] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  { f: SUM_ENCRYPTION, props: { sum: 0xbfaf } },
+  { f: REVEAL_RANDOMNESS, props: { id: 0 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 1 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 2 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 3 } },
+  { f: SUM_RANDOMNESS, props: { sum: 26 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 0 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 1 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 2 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_FINAL_ENCRYPTION, props: {} },
+  { f: VERIFY_SUM, props: {} },
+  { f: CLEAR, props: {} },
+  // FLOP 3
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 44 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 15 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 10 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 51 } },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 0, result: [0xffff, 0xbeef] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 1, result: [0xabab, 0xbaba] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 2, result: [0x1234, 0xdeed] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  { f: SUM_ENCRYPTION, props: { sum: 0xbfaf } },
+  { f: REVEAL_RANDOMNESS, props: { id: 0 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 1 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 2 } },
+  { f: REVEAL_RANDOMNESS, props: { id: 3 } },
+  { f: SUM_RANDOMNESS, props: { sum: 16 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 0 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 1 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 2 } },
+  { f: VERIFY_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_FINAL_ENCRYPTION, props: {} },
+  { f: VERIFY_SUM, props: {} },
+  { f: CLEAR, props: {} },
+  // ME 1
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 1 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 5 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 12 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 51 } },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 0, result: [0xffff, 0xbeef] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 1, result: [0xabab, 0xbaba] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 2, result: [0x1234, 0xdeed] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 1, to: 0 },
+  },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 2, to: 0 },
+  },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 3, to: 0 },
+  },
+  { f: SUM_PERSONAL_RAND, props: { sum: 17 } },
+  { f: CLEAR, props: {} },
+  // ME 2
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 17 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 2 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 14 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 33 } },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 0, result: [0xffff, 0xbeef] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 1, result: [0xabab, 0xbaba] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 2, result: [0x1234, 0xdeed] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 1, to: 0 },
+  },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 2, to: 0 },
+  },
+  {
+    f: GIVE_RAND_TO,
+    props: { from: 3, to: 0 },
+  },
+  { f: SUM_PERSONAL_RAND, props: { sum: 14 } },
+  { f: CLEAR, props: {} },
+  // Player 1
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 22 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 23 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 11 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 11 } },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 0, result: [0xffff, 0xbeef] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 1, result: [0xabab, 0xbaba] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 2, result: [0x1234, 0xdeed] },
+  },
+  {
+    f: ENCRYPT_RANDOM_NUMBER,
+    props: { id: 3, result: [0x0231, 0x2322] },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 0, commitment: 0xaabb },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 1, commitment: 0xffcc },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 2, commitment: 0x11dd },
+  },
+  {
+    f: SHARE_COMMITMENT,
+    props: { id: 3, commitment: 0x3f3f },
+  },
+  { f: SHARE_ENCRYPTION, props: { id: 0 } },
+  { f: SHARE_ENCRYPTION, props: { id: 1 } },
+  { f: SHARE_ENCRYPTION, props: { id: 2 } },
+  { f: SHARE_ENCRYPTION, props: { id: 3 } },
+  { f: VERIFY_COMMITMENT, props: { id: 0 } },
+  { f: VERIFY_COMMITMENT, props: { id: 1 } },
+  { f: VERIFY_COMMITMENT, props: { id: 2 } },
+  { f: VERIFY_COMMITMENT, props: { id: 3 } },
+  { f: GIVE_RAND_TO, props: { from: 0, to: 1 } },
+  { f: GIVE_RAND_TO, props: { from: 2, to: 1 } },
+  { f: GIVE_RAND_TO, props: { from: 3, to: 1 } },
+  { f: SUM_OTHER_RAND, props: { id: 1 } },
+  { f: CLEAR, props: {} },
 ];
 
-const EXECUTE_STEP = (
-  table,
-  setTable,
-  cards,
-  setCards,
-  directedEdges,
-  setDirectedEdges,
-  ourNodes,
-  setOurNodes,
-  data,
-  setData,
-  N,
-  SN
-) => {
-  STEPS[N].f(
-    table,
-    setTable,
-    cards,
-    setCards,
-    directedEdges,
-    setDirectedEdges,
-    ourNodes,
-    setOurNodes,
-    data,
-    setData,
-    STEPS[N].props
-  );
+const EXECUTE_STEP = (N, SN) => {
+  STEPS[N].f(STEPS[N].props);
   SN(N + 1);
 };
 
 function App() {
   // state machine
   const [CURRENT_STEP, SET_CURRENT_STEP] = useState(0);
+  const commitments = STORE.useState((s) => s.commitments);
+  const encryptions = STORE.useState((s) => s.encryptions);
+  const randomness = STORE.useState((s) => s.randomness);
+  const finalEncryption = STORE.useState((s) => s.finalEncryption);
+  const finalCard = STORE.useState((s) => s.finalCard);
+  const table = STORE.useState((s) => s.table);
+  const cards = STORE.useState((s) => s.cards);
+  const tick = <span style={{ marginLeft: "4px" }}>✅</span>;
 
-  // Nodes State
-  const [ourNodes, setOurNodes] = useState(Nodes);
-  const [nodes, setNodes, onNodesChange] = useNodesState(GenerateNodes(Nodes));
-  useEffect(() => {
-    setNodes(GenerateNodes(ourNodes));
-  }, [ourNodes, setNodes]);
-
-  // Edges State
-  const [directedEdges, setDirectedEdges] = useState(DirectedEdges);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    GenerateEdges(directedEdges)
-  );
-  useEffect(() => {
-    setEdges(GenerateEdges(directedEdges));
-  }, [directedEdges, setEdges]);
-
-  // Cards State
-  const [cards, setCards] = useState(Cards);
-  const [table, setTable] = useState(Table);
-
-  // Data State
-  const [data, setData] = useState(InitialData);
-
-  if (CURRENT_STEP === 0) {
-    STEPS[0].f(
-      table,
-      setTable,
-      cards,
-      setCards,
-      directedEdges,
-      setDirectedEdges,
-      ourNodes,
-      setOurNodes,
-      data,
-      setData,
-      {}
-    );
-    SET_CURRENT_STEP(CURRENT_STEP + 1);
-  }
+  console.log(STEPS.length);
 
   return (
     <div style={SS.mainWrapper}>
@@ -227,24 +486,10 @@ function App() {
         <div style={SS.column2}>
           <div style={SS.simulation}>
             <h3> Simulation </h3>
-            {/* <h5 style={{ marginTop: "0" }}>{STEPS[CURRENT_STEP].f.name}</h5> */}
             <button
               onClick={() => {
                 if (CURRENT_STEP >= STEPS.length) return;
-                EXECUTE_STEP(
-                  table,
-                  setTable,
-                  cards,
-                  setCards,
-                  directedEdges,
-                  setDirectedEdges,
-                  ourNodes,
-                  setOurNodes,
-                  data,
-                  setData,
-                  CURRENT_STEP,
-                  SET_CURRENT_STEP
-                );
+                EXECUTE_STEP(CURRENT_STEP, SET_CURRENT_STEP);
               }}
               style={{ marginBottom: "32px" }}
             >
@@ -252,10 +497,8 @@ function App() {
             </button>
             <div style={SS.flowWrapper}>
               <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
+                nodes={GenerateNodes()}
+                edges={GenerateEdges()}
                 panOnDrag={false}
                 zoomOnPinch={false}
                 zoomOnScroll={false}
@@ -266,37 +509,95 @@ function App() {
           <div style={SS.common}>
             <h3> Public Information </h3>
             <div style={SS.public}>
-              <div style={SS.publicCol}>
-                <h4> Me </h4>
-                <div style={{ fontSize: "10px" }}>
-                  {data.filter((d) => d.id === "0")[0].d.map((d) => d)}
-                </div>
-              </div>
-              <div style={SS.publicCol}>
-                <h4> Player 1 </h4>
-                <div style={{ fontSize: "10px" }}>
-                  {data.filter((d) => d.id === "1")[0].d.map((d) => d)}
-                </div>
-              </div>
-              <div style={SS.publicCol}>
-                <h4> Player 2 </h4>
-                <div style={{ fontSize: "10px" }}>
-                  {data.filter((d) => d.id === "2")[0].d.map((d) => d)}
-                </div>
-              </div>
-              <div style={SS.publicCol}>
-                <h4> Player 3 </h4>
-                <div style={{ fontSize: "10px" }}>
-                  {data.filter((d) => d.id === "3")[0].d.map((d) => d)}
-                </div>
-              </div>
+              {[...Array(4)].map((_, i) => {
+                const header = i === 0 ? <h4> Me </h4> : <h4> Player {i}</h4>;
+                return (
+                  <div style={SS.publicCol}>
+                    {header}
+                    <div style={{ fontSize: "10px" }}>
+                      {(() => {
+                        if (commitments[i].value && commitments[i].revealed) {
+                          return (
+                            <>
+                              {
+                                <Latex strict>
+                                  {`$C(E(c_${i}) = 0x${commitments[
+                                    i
+                                  ].value.toString(16)}...$`}
+                                </Latex>
+                              }
+                              {commitments[i].valid ? tick : <></>}
+                              <br />
+                            </>
+                          );
+                        }
+                      })()}
+                      {(() => {
+                        if (encryptions[i].value && encryptions[i].revealed) {
+                          return (
+                            <>
+                              {
+                                <Latex strict>
+                                  {`$E(c_${i}) = \
+                                (0x${encryptions[i].value[0].toString(16)}..., \
+                                 0x${encryptions[i].value[1].toString(
+                                   16
+                                 )}...)$`}
+                                </Latex>
+                              }
+                              {encryptions[i].valid ? tick : <></>}
+                              <br />
+                            </>
+                          );
+                        }
+                      })()}
+                      {(() => {
+                        if (randomness[i].value && randomness[i].revealed) {
+                          return (
+                            <>
+                              {
+                                <Latex strict>
+                                  {`$c_${i} = ${randomness[i].value}$`}
+                                </Latex>
+                              }
+                              {randomness[i].valid ? tick : <></>}
+                              <br />
+                            </>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </div>
+                );
+              })}
               <div style={SS.publicCol2}>
                 <h4> Common </h4>
                 <div style={{ fontSize: "10px" }}>
-                  {data.filter((d) => d.id === "common")[0].d.map((d) => d)}
+                  {finalEncryption.value ? (
+                    <>
+                      <Latex strict>
+                        {`$E(\\sum n) = 0x${finalEncryption.value}...$`}
+                      </Latex>
+                      {finalEncryption.valid ? tick : <></>}
+                      <br />
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  {finalCard.value ? (
+                    <>
+                      <Latex strict>
+                        {`$\\sum n \\mod 52 = ${finalCard.value}$`}
+                      </Latex>
+                      {finalCard.valid ? tick : <></>}
+                      <br />
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  <br />
                 </div>
               </div>
-              <div style={SS.publicCol}></div>
             </div>
           </div>
         </div>
@@ -305,19 +606,18 @@ function App() {
           <h2> Table </h2>
           <Hand cards={table} />
           <h2> Me </h2>
-          <Hand cards={cards.filter((c) => c.id === "0")[0]?.cards} />
+          <Hand cards={cards[0]} />
           <div style={SS.PlayersWrapper}>
-            {cards.map((x) => {
-              if (x.id !== "0") {
+            {cards
+              .filter((_, j) => j > 0)
+              .map((x, i) => {
                 return (
                   <div style={SS.column}>
-                    <h3> Player {x.id} </h3>
-                    <Hand cards={x.cards} />
+                    <h3> Player {i + 1} </h3>
+                    <Hand cards={x} />
                   </div>
                 );
-              }
-              return <></>;
-            })}
+              })}
           </div>
         </div>
       </div>
