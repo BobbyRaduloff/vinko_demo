@@ -25,6 +25,7 @@ import {
   SUM_OTHER_RAND,
 } from "./Graph";
 import Latex from "react-latex-next";
+import { PickRandomNumber } from "./Crypto";
 
 const SS = {
   mainWrapper: {
@@ -118,7 +119,7 @@ const SS = {
 
 const STEPS = [
   // FLOP 1
-  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: 20 } },
+  { f: PICK_RANDOM_NUMBER, props: { id: 0, number: PickRandomNumber() } },
   { f: PICK_RANDOM_NUMBER, props: { id: 1, number: 31 } },
   { f: PICK_RANDOM_NUMBER, props: { id: 2, number: 10 } },
   { f: PICK_RANDOM_NUMBER, props: { id: 3, number: 11 } },
