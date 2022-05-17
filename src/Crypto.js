@@ -32,11 +32,93 @@ function Encrypt(m, pk) {
 
 function Decrypt(a, b, pk) {
     let d = a.pow(pk).mod(P);
-    let m = b / d;
+    let m = b.div(d).mod(P);
 
     return m;
 }
 
 function PickRandomNumber() {
     return Math.round(Math.random() * 52);
+}
+
+function VerifyEncryption(m, r, pk, a, b) { 
+    //Here a and b are the displayed [a, b] of the shared encryption
+    let a_correct = G.pow(r).mod(P);
+    let b_correct = pk.pow(r).mul(m).mod(P);
+
+    if(a == a_correct && b == b_correct) {
+        let verified = True;
+    }
+    else {
+        let verified = False;
+    }
+
+    return verified;
+}
+
+//Detect Collision Process
+// 1. Compute E(m1/m2), all agree on this value
+// 2. Transform Field and compute new G and Y
+// 3. Users compute wi, ti, agree on c
+// 4. Users check if w = Y^C * G^t; if yes, start again; if not, continue
+
+function DivideMessages(a1, b1, a2, b2) {
+    //[ai, bi] is the encryption of mi
+    let A = a1.div(a2).mod(P);
+    let B = b1.div(b2).mod(P);
+
+    return [A, B];
+}
+
+function TransformField(A, B, pk) {
+    // Here [A, B] is the encryption of the card
+    
+    //Choose an arbitrary hash function hash(G, pk, A, B, j) MOD P
+    //where j = {1, 2}, the subscript of e_j
+    let e_1 = 1; //placeholder
+    // e_1 = hash(G, pk, A, B, 1)
+    let e_2 = 1; //placeholder
+    // e_2 = hash(G, pk, A, B, 2)
+
+    let G_tr = ((G.pow(e_1)).mul((A.pow(e_2)))).mod(P); //Transformed generator
+    let PK_tr = ((pk.pow(e_1)).mul((B.pow(e_2)))).mod(P); //Transformed Y
+
+    return [G_tr, PK_tr];
+}
+
+function SchnorSig_W(G_tr) {
+    //Every player runs this function separately
+    let k_i = Math.round(Math.random() * Q);
+    let w_i = G_tr.pow(k).mod(P);
+
+    return [w_i, k_i];
+}
+
+//Players sum w_is and get w
+
+function SchnorSig_T(w, k_i, sk) {
+    // c = hash(mu, w) where hash is an arbitrary encryption, mu(message) doesn't matter
+    let c = 1; //placeholder
+
+    let t_i = (k_i - c.mul(sk)).mod(Q);
+
+    return [t_i, c];
+}
+
+//Sum t_s under module and get t; agree on c
+
+function DetectCollision(PK_tr, G_tr, w, t, c) {
+    // w is the same as r in Schnor's paper
+
+    //Check if logarithms are equal
+    let w_comp = ((PK_tr.pow(c)).mul((G_tr.pow(t)))).mod(P);
+    
+    if(w == w_comp) {
+        let collision = True;
+    }
+    else{
+        let collision = False;
+    }
+
+    return collision;
 }
